@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cadastre Looker</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <h1>Cadastre Looker</h1>
+      <form id="search-form">
+        <label for="city">City (INSEE code)</label>
+        <select id="city" name="city" required></select>
+
+        <label for="size">Parcel size (m²)</label>
+        <input id="size" name="size" type="number" min="0" step="1" required placeholder="e.g. 750" />
+
+        <label for="tolerance">Tolerance (±%)</label>
+        <input id="tolerance" name="tolerance" type="number" min="0" step="1" value="10" />
+
+        <button type="submit">Search</button>
+      </form>
+
+      <div id="status"></div>
+      <ul id="results"></ul>
+    </aside>
+    <main id="map"></main>
+  </div>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="/config.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

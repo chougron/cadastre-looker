@@ -1,0 +1,158 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #666;
+  --border: #ddd;
+  --accent: #2563eb;
+  --accent-fg: #ffffff;
+  --sidebar-bg: #fafafa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181c;
+    --fg: #e6e6e6;
+    --muted: #9a9a9a;
+    --border: #333;
+    --accent: #3b82f6;
+    --accent-fg: #0b0d10;
+    --sidebar-bg: #1c1f24;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+#app {
+  display: flex;
+  height: 100vh;
+}
+
+#sidebar {
+  width: 340px;
+  flex-shrink: 0;
+  padding: 1rem;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+#sidebar h1 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+}
+
+#search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+#search-form label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.4rem;
+}
+
+#search-form select,
+#search-form input {
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.95rem;
+}
+
+#search-form button {
+  margin-top: 0.9rem;
+  padding: 0.55rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+#search-form button:hover {
+  filter: brightness(1.08);
+}
+
+#status {
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+
+#results {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+#results li {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+#results li:hover {
+  background: var(--border);
+}
+
+#results li .parcel-id {
+  font-weight: 600;
+  display: block;
+}
+
+#results li .parcel-size {
+  color: var(--muted);
+}
+
+#results li a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+#results li a:hover {
+  text-decoration: underline;
+}
+
+#map {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  #app {
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  #sidebar {
+    width: 100%;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #map {
+    flex: 1;
+    min-height: 0;
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+dist-lambda/
+
+infra/node_modules/
+infra/bin/
+infra/.pulumi/
