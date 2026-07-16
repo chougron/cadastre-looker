@@ -97,9 +97,8 @@ export interface SearchMatch {
 export function searchParcels(
   features: ParcelFeature[],
   targetSize: number,
-  tolerancePct: number,
+  tolerance: number,
 ): SearchMatch[] {
-  const tolerance = (targetSize * tolerancePct) / 100;
   const low = targetSize - tolerance;
   const high = targetSize + tolerance;
 

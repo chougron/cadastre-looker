@@ -18,14 +18,14 @@ export function createApiRouter(): express.Router {
     const city = typeof req.query.city === "string" ? req.query.city : undefined;
     const size = typeof req.query.size === "string" ? Number(req.query.size) : NaN;
     const tolerance =
-      typeof req.query.tolerance === "string" ? Number(req.query.tolerance) : 10;
+      typeof req.query.tolerance === "string" ? Number(req.query.tolerance) : 50;
 
     if (!city || Number.isNaN(size)) {
       res.status(400).json({ error: "Query params 'city' and 'size' are required." });
       return;
     }
     if (Number.isNaN(tolerance) || tolerance < 0) {
-      res.status(400).json({ error: "'tolerance' must be a non-negative number." });
+      res.status(400).json({ error: "'tolerance' must be a non-negative number of m²." });
       return;
     }
 

@@ -19,9 +19,9 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:3000, pick a city, enter a target parcel size and tolerance,
-and search. Matching parcels are drawn on the map and listed in the sidebar, each with a
-Google Maps link.
+Then open http://localhost:3000, pick a city, enter a target parcel size and a tolerance
+(± m²), and search. Matching parcels are drawn on the map and listed in the sidebar, each
+with a Google Maps link.
 
 For a production build:
 
@@ -33,9 +33,9 @@ npm start
 ## Deploying to AWS (free tier)
 
 Infrastructure is defined with Pulumi in `infra/` — an S3 static website for the frontend,
-and a Lambda function (behind a public Function URL) for the `/api/*` routes. Both fit
-comfortably in AWS's always-free tier for low traffic (S3 free tier is for the first 12
-months; Lambda's 1M requests / 400,000 GB-s per month is permanent).
+and a Lambda function behind an API Gateway HTTP API for the `/api/*` routes. Both fit
+comfortably in AWS's free tier for low traffic (S3 and API Gateway are free for the first
+12 months; Lambda's 1M requests / 400,000 GB-s per month is permanent).
 
 Prerequisites:
 
@@ -62,6 +62,6 @@ always deploys the current code. On success it prints two outputs:
 
 - `websiteUrl` — the S3 static website (HTTP only; add CloudFront later for HTTPS/a
   custom domain)
-- `apiUrl` — the Lambda Function URL backing the frontend
+- `apiUrl` — the API Gateway endpoint backing the frontend
 
 To tear everything down: `pulumi destroy`.

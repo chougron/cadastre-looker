@@ -83,7 +83,7 @@ form.addEventListener("submit", async (event) => {
   }
 
   if (data.features.length === 0) {
-    statusEl.textContent = `No parcels found in city ${city} within ${size} m² ±${tolerance}%.`;
+    statusEl.textContent = `No parcels found in city ${city} within ${size} m² ±${tolerance} m².`;
     return;
   }
 
