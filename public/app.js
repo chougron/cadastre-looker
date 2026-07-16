@@ -1,4 +1,5 @@
 const API_BASE = window.API_BASE_URL || "";
+const GEO_API_BASE = "https://geo.api.gouv.fr";
 
 const map = L.map("map").setView([46.6, 2.2], 6); // France
 
@@ -25,21 +26,77 @@ let resultsLayer = L.geoJSON(null, {
 }).addTo(map);
 
 const form = document.getElementById("search-form");
-const citySelect = document.getElementById("city");
+const citySearchInput = document.getElementById("city-search");
+const citySuggestionsEl = document.getElementById("city-suggestions");
+const cityCodeInput = document.getElementById("city-code");
 const statusEl = document.getElementById("status");
 const resultsEl = document.getElementById("results");
 
-async function loadCities() {
-  const res = await fetch(`${API_BASE}/api/cities`);
-  const data = await res.json();
-  citySelect.innerHTML = "";
-  for (const city of data.cities) {
-    const option = document.createElement("option");
-    option.value = city;
-    option.textContent = city;
-    citySelect.appendChild(option);
-  }
+function hideSuggestions() {
+  citySuggestionsEl.hidden = true;
+  citySuggestionsEl.innerHTML = "";
 }
+
+function selectCity(code, name, zipCode) {
+  cityCodeInput.value = code;
+  citySearchInput.value = `${name} (${zipCode})`;
+  hideSuggestions();
+}
+
+function renderSuggestions(communes) {
+  citySuggestionsEl.innerHTML = "";
+  if (communes.length === 0) {
+    hideSuggestions();
+    return;
+  }
+  for (const commune of communes) {
+    const zipCodes = (commune.codesPostaux ?? []).join(", ") || commune.code;
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${commune.nom} (${zipCodes})</span>`;
+    li.addEventListener("mousedown", (event) => {
+      // mousedown fires before the input's blur event, unlike click
+      event.preventDefault();
+      selectCity(commune.code, commune.nom, commune.codesPostaux?.[0] ?? commune.code);
+    });
+    citySuggestionsEl.appendChild(li);
+  }
+  citySuggestionsEl.hidden = false;
+}
+
+function debounce(fn, delayMs) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delayMs);
+  };
+}
+
+const searchCommunes = debounce(async (query) => {
+  const params = new URLSearchParams({
+    nom: query,
+    fields: "nom,code,codesPostaux",
+    boost: "population",
+    limit: "8",
+  });
+  const res = await fetch(`${GEO_API_BASE}/communes?${params}`);
+  if (!res.ok) {
+    hideSuggestions();
+    return;
+  }
+  renderSuggestions(await res.json());
+}, 300);
+
+citySearchInput.addEventListener("input", () => {
+  cityCodeInput.value = "";
+  const query = citySearchInput.value.trim();
+  if (query.length < 2) {
+    hideSuggestions();
+    return;
+  }
+  searchCommunes(query);
+});
+
+citySearchInput.addEventListener("blur", () => hideSuggestions());
 
 function renderResults(features) {
   resultsEl.innerHTML = "";
@@ -65,9 +122,14 @@ function renderResults(features) {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const city = citySelect.value;
+  const city = cityCodeInput.value;
   const size = document.getElementById("size").value;
   const tolerance = document.getElementById("tolerance").value;
+
+  if (!city) {
+    statusEl.textContent = "Please pick a city from the suggestions list.";
+    return;
+  }
 
   statusEl.textContent = "Searching...";
   resultsEl.innerHTML = "";
@@ -92,5 +154,3 @@ form.addEventListener("submit", async (event) => {
   renderResults(data.features);
   map.fitBounds(resultsLayer.getBounds(), { maxZoom: 18 });
 });
-
-loadCities();

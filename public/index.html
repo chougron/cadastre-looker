@@ -17,8 +17,18 @@
     <aside id="sidebar">
       <h1>Cadastre Looker</h1>
       <form id="search-form">
-        <label for="city">City (INSEE code)</label>
-        <select id="city" name="city" required></select>
+        <label for="city-search">City</label>
+        <div class="autocomplete">
+          <input
+            id="city-search"
+            type="text"
+            autocomplete="off"
+            placeholder="Type a city name..."
+            required
+          />
+          <ul id="city-suggestions" class="suggestions" hidden></ul>
+        </div>
+        <input type="hidden" id="city-code" name="city" />
 
         <label for="size">Parcel size (m²)</label>
         <input id="size" name="size" type="number" min="0" step="1" required placeholder="e.g. 750" />
