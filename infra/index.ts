@@ -48,7 +48,7 @@ const lambdaArchive = new pulumi.asset.AssetArchive({
 });
 
 const apiLambda = new aws.lambda.Function("api", {
-  runtime: "nodejs20.x",
+  runtime: "nodejs24.x",
   handler: "dist-lambda/lambda.handler",
   role: lambdaRole.arn,
   code: lambdaArchive,
