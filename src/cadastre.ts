@@ -1,8 +1,13 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, writeFile, mkdir, stat } from "node:fs/promises";
 import path from "node:path";
+import { gunzipSync } from "node:zlib";
 
 const DATA_DIR = process.env.CADASTRE_DATA_DIR ?? process.cwd();
+const CACHE_DIR = process.env.CADASTRE_CACHE_DIR ?? DATA_DIR;
 const FILE_RE = /^cadastre-([A-Za-z0-9_]+)-parcelles\.json$/;
+
+// Etalab publishes dated snapshots; bump this when a newer one is available.
+const ETALAB_SNAPSHOT_DATE = "2026-06-01";
 
 export interface ParcelProperties {
   id: string;
@@ -37,25 +42,73 @@ interface CadastreFile {
 
 const cache = new Map<string, ParcelFeature[]>();
 
-export async function listAvailableCities(): Promise<string[]> {
-  const entries = await readdir(DATA_DIR);
-  return entries
-    .map((name) => FILE_RE.exec(name)?.[1])
-    .filter((id): id is string => Boolean(id))
-    .sort();
+function cityFileName(cityId: string): string {
+  return `cadastre-${cityId}-parcelles.json`;
 }
 
-function cityFilePath(cityId: string): string | null {
-  if (!/^[A-Za-z0-9_]+$/.test(cityId)) return null;
-  return path.join(DATA_DIR, `cadastre-${cityId}-parcelles.json`);
+async function listDirCities(dir: string): Promise<string[]> {
+  try {
+    const entries = await readdir(dir);
+    return entries
+      .map((name) => FILE_RE.exec(name)?.[1])
+      .filter((id): id is string => Boolean(id));
+  } catch {
+    return [];
+  }
+}
+
+export async function listAvailableCities(): Promise<string[]> {
+  const cities = new Set([
+    ...(await listDirCities(DATA_DIR)),
+    ...(await listDirCities(CACHE_DIR)),
+  ]);
+  return [...cities].sort();
+}
+
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await stat(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function etalabDownloadUrl(cityId: string): string {
+  const dept = cityId.slice(0, 2);
+  return (
+    `https://files.data.gouv.fr/cadastre/etalab-cadastre/${ETALAB_SNAPSHOT_DATE}` +
+    `/geojson/communes/${dept}/${cityId}/${cityFileName(cityId)}.gz`
+  );
+}
+
+async function downloadCityFile(cityId: string): Promise<string | null> {
+  const res = await fetch(etalabDownloadUrl(cityId));
+  if (!res.ok) return null;
+
+  const json = gunzipSync(Buffer.from(await res.arrayBuffer()));
+
+  await mkdir(CACHE_DIR, { recursive: true });
+  const filePath = path.join(CACHE_DIR, cityFileName(cityId));
+  await writeFile(filePath, json);
+  return filePath;
 }
 
 export async function loadCityFeatures(cityId: string): Promise<ParcelFeature[] | null> {
   const cached = cache.get(cityId);
   if (cached) return cached;
 
-  const filePath = cityFilePath(cityId);
-  if (!filePath) return null;
+  if (!/^[A-Za-z0-9_]+$/.test(cityId)) return null;
+
+  let filePath = path.join(DATA_DIR, cityFileName(cityId));
+  if (!(await fileExists(filePath))) {
+    filePath = path.join(CACHE_DIR, cityFileName(cityId));
+    if (!(await fileExists(filePath))) {
+      const downloaded = await downloadCityFile(cityId);
+      if (!downloaded) return null;
+      filePath = downloaded;
+    }
+  }
 
   let raw: string;
   try {

@@ -31,8 +31,9 @@ export function createApiRouter(): express.Router {
 
     const features = await loadCityFeatures(city);
     if (!features) {
-      const cities = await listAvailableCities();
-      res.status(404).json({ error: `No cadastre file found for city '${city}'.`, cities });
+      res.status(404).json({
+        error: `No cadastre data found for city '${city}' (checked locally and on the Etalab cadastre archive).`,
+      });
       return;
     }
 

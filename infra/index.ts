@@ -53,9 +53,9 @@ const apiLambda = new aws.lambda.Function("api", {
   role: lambdaRole.arn,
   code: lambdaArchive,
   memorySize: 256,
-  timeout: 10,
+  timeout: 30,
   environment: {
-    variables: { CADASTRE_DATA_DIR: "/var/task" },
+    variables: { CADASTRE_DATA_DIR: "/var/task", CADASTRE_CACHE_DIR: "/tmp" },
   },
 });
 
